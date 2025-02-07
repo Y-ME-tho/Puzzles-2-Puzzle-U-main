@@ -81,7 +81,7 @@
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
       try {
-        const res = await fetch('http://localhost:3000/leaderboard');
+        const res = await fetch('https://puzzles-backend.onrender.com/leaderboard');
         const data = await res.json();
         const tbody = document.getElementById('leaderboard-table-body');
         tbody.innerHTML = '';

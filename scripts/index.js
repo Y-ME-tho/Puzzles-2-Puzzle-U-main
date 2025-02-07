@@ -48,7 +48,7 @@ responseForm.addEventListener('submit', async (e) => {
     return;
   }
   try {
-    const backendURL = 'http://localhost:3000/submit';
+    const backendURL = 'https://puzzles-backend.onrender.com/submit';
     const res = await fetch(backendURL, {
       method: 'POST',
       headers: {
