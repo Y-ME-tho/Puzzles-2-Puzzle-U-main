@@ -3,19 +3,32 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 
+// Create Express app
 const app = express();
+
+// Middleware
 app.use(bodyParser.json());
 app.use(cors());
+
+// Port from environment or fallback to 3000
 const PORT = process.env.PORT || 3000;
-mongoose.connect('mongodb://localhost:27017/puzzlesDB', {
+
+// Connection string from environment (e.g., MONGODB_URI on Render) or local fallback
+const MONGO_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/puzzlesDB';
+
+// Connect to MongoDB
+mongoose.connect(MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })
 .then(() => console.log('✅ Connected to MongoDB!'))
 .catch((err) => console.error('❌ MongoDB connection error:', err));
 
+// Example puzzle config
 const CURRENT_WEEK = 'week1';
 const CORRECT_ANSWER = '42';
+
+// Schema & Model
 const submissionSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true },
@@ -25,6 +38,12 @@ const submissionSchema = new mongoose.Schema({
 });
 const Submission = mongoose.model('Submission', submissionSchema);
 
+// Root route to avoid "Cannot GET /"
+app.get('/', (req, res) => {
+  res.send('Welcome to the Puzzles Backend!');
+});
+
+// POST /submit
 app.post('/submit', async (req, res) => {
   try {
     const { name, email, answer } = req.body;
@@ -45,6 +64,7 @@ app.post('/submit', async (req, res) => {
   }
 });
 
+// GET /leaderboard
 app.get('/leaderboard', async (req, res) => {
   try {
     const leaderboard = await Submission.aggregate([
@@ -52,7 +72,9 @@ app.get('/leaderboard', async (req, res) => {
         $group: {
           _id: { email: '$email', name: '$name' },
           totalAttempts: { $sum: 1 },
-          problemsSolved: { $sum: { $cond: ['$isCorrect', 1, 0] } },
+          problemsSolved: {
+            $sum: { $cond: ['$isCorrect', 1, 0] },
+          },
         },
       },
       { $sort: { problemsSolved: -1, totalAttempts: 1 } },
@@ -74,6 +96,7 @@ app.get('/leaderboard', async (req, res) => {
   }
 });
 
+// Start server
 app.listen(PORT, () => {
-  console.log(`✅ Server running on http://localhost:${PORT}`);
+  console.log(`✅ Server running on port ${PORT}`);
 });
