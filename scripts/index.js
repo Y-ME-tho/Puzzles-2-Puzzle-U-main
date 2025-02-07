@@ -42,22 +42,19 @@ detailsForm.addEventListener('submit', (e) => {
 responseForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   const responseField = document.getElementById('response');
-  const answer = responseField.value;
+  const answer = responseField.value.trim();
   if (!answer) {
     alert('Please enter a response!');
     return;
   }
   try {
-    const backendURL = 'https://puzzles-backend.onrender.com/submit';
-    const res = await fetch(backendURL, {
+    const res = await fetch('https://puzzles-backend.onrender.com/submit', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         name: globalName,
         email: globalEmail,
-        answer,
+        answer
       }),
     });
     const data = await res.json();
