@@ -8,11 +8,11 @@ app.use(bodyParser.json());
 app.use(cors());
 
 const PORT = process.env.PORT || 3000;
-const MONGO_URI = 'mongodb+srv://rishabjha098:zjRHiWgtoqvLnS2m@cluster0.sq6fc.mongodb.net/puzzlesDB?retryWrites=true&w=majority&appName=Cluster0';
+const MONGO_URI = 'mongodb+srv://rishabjha098:F7QzcbD8-VAiqR.@cluster0.sq6fc.mongodb.net/puzzlesDB?retryWrites=true&w=majority&appName=Cluster0';
 
 mongoose.connect(MONGO_URI, {
   useNewUrlParser: true,
-  useUnifiedTopology: true,
+  useUnifiedTopology: true
 })
 .then(() => console.log('✅ Connected to MongoDB!'))
 .catch((err) => console.error('❌ MongoDB connection error:', err));
@@ -25,7 +25,7 @@ const submissionSchema = new mongoose.Schema({
   email: { type: String, required: true },
   week: { type: String, required: true },
   isCorrect: { type: Boolean, required: true },
-  createdAt: { type: Date, default: Date.now },
+  createdAt: { type: Date, default: Date.now }
 });
 
 const Submission = mongoose.model('Submission', submissionSchema);
@@ -45,12 +45,7 @@ app.post('/submit', async (req, res) => {
       return res.status(400).json({ error: 'Max attempts reached for this puzzle/week.' });
     }
     const isCorrect = answer.trim() === CORRECT_ANSWER;
-    const newSubmission = new Submission({
-      name,
-      email,
-      week: CURRENT_WEEK,
-      isCorrect,
-    });
+    const newSubmission = new Submission({ name, email, week: CURRENT_WEEK, isCorrect });
     await newSubmission.save();
     res.json({ success: true, isCorrect });
   } catch (error) {
@@ -66,8 +61,8 @@ app.get('/leaderboard', async (req, res) => {
         $group: {
           _id: { email: '$email', name: '$name' },
           totalAttempts: { $sum: 1 },
-          problemsSolved: { $sum: { $cond: ['$isCorrect', 1, 0] } },
-        },
+          problemsSolved: { $sum: { $cond: ['$isCorrect', 1, 0] } }
+        }
       },
       { $sort: { problemsSolved: -1, totalAttempts: 1 } },
       { $limit: 10 },
@@ -77,9 +72,9 @@ app.get('/leaderboard', async (req, res) => {
           name: '$_id.name',
           email: '$_id.email',
           totalAttempts: 1,
-          problemsSolved: 1,
-        },
-      },
+          problemsSolved: 1
+        }
+      }
     ]);
     res.json(leaderboard);
   } catch (error) {
