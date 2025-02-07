@@ -2,13 +2,14 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cors = require('cors');
+require('dotenv').config();
 
 const app = express();
 app.use(bodyParser.json());
 app.use(cors());
 
 const PORT = process.env.PORT || 3000;
-const MONGO_URI = process.env.MONGODB_URI || 'mongodb+srv://rishabjha098:zjRHiWgtoqvLnS2m@cluster0.sq6fc.mongodb.net/puzzlesDB?retryWrites=true&w=majority&appName=Cluster0';
+const MONGO_URI = process.env.MONGODB_URI;
 
 mongoose.connect(MONGO_URI, {
   useNewUrlParser: true,
