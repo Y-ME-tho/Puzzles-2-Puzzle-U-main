@@ -60,6 +60,8 @@ detailsForm.addEventListener('submit', (e) => {
     globalEmail = emailField.value;
     const carousel = new bootstrap.Carousel('#carouselExample');
     carousel.next();
+  } else {
+    alert('Please fill in both name and email or sign in with Google.');
   }
 });
 
