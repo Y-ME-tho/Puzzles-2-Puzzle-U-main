@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cors = require('cors');
+const { OAuth2Client } = require('google-auth-library');
 
 const app = express();
 app.use(bodyParser.json());
@@ -9,6 +10,9 @@ app.use(cors());
 
 const PORT = process.env.PORT || 3000;
 const MONGO_URI = 'mongodb+srv://rishabjha098:F7QzcbD8-VAiqR.@cluster0.sq6fc.mongodb.net/puzzlesDB?retryWrites=true&w=majority&appName=Cluster0';
+const GOOGLE_CLIENT_ID = '83394014914-n0r1a77ksmc9oojjc7r40c3blc4fe1gk.apps.googleusercontent.com';
+
+const client = new OAuth2Client(GOOGLE_CLIENT_ID);
 
 mongoose.connect(MONGO_URI, {
   useNewUrlParser: true,
@@ -27,11 +31,46 @@ const submissionSchema = new mongoose.Schema({
   isCorrect: { type: Boolean, required: true },
   createdAt: { type: Date, default: Date.now }
 });
-
 const Submission = mongoose.model('Submission', submissionSchema);
+
+const userSchema = new mongoose.Schema({
+  googleId: { type: String, required: true, unique: true },
+  name: String,
+  email: String,
+  picture: String
+});
+const User = mongoose.model('User', userSchema);
 
 app.get('/', (req, res) => {
   res.send('Welcome to the Puzzles Backend!');
+});
+
+app.post('/auth/google', async (req, res) => {
+  try {
+    const { token } = req.body;
+    const ticket = await client.verifyIdToken({
+      idToken: token,
+      audience: GOOGLE_CLIENT_ID
+    });
+    const payload = ticket.getPayload();
+    const email = payload.email;
+    if (!email.endsWith("bits-pilani.ac.in")) {
+      return res.status(403).json({ error: "Only BITS Pilani emails are allowed." });
+    }
+    let user = await User.findOne({ googleId: payload.sub });
+    if (!user) {
+      user = await User.create({
+        googleId: payload.sub,
+        name: payload.name,
+        email: payload.email,
+        picture: payload.picture
+      });
+    }
+    return res.json({ success: true, user: { name: user.name, email: user.email, picture: user.picture } });
+  } catch (err) {
+    console.error("Error in /auth/google:", err);
+    return res.status(500).json({ error: "Server error. Please try again later." });
+  }
 });
 
 app.post('/submit', async (req, res) => {

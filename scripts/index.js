@@ -22,6 +22,30 @@ window.addEventListener('click', (e) => {
   }
 });
 
+function handleCredentialResponse(response) {
+  const token = response.credential;
+  fetch('https://puzzles-backend.onrender.com/auth/google', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ token })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      globalName = data.user.name;
+      globalEmail = data.user.email;
+      const carousel = new bootstrap.Carousel('#carouselExample');
+      carousel.next();
+    } else {
+      alert(data.error || 'Google sign in failed.');
+    }
+  })
+  .catch(err => {
+    console.error('Error during Google sign in:', err);
+    alert('Server error. Please try again later.');
+  });
+}
+
 const detailsForm = document.getElementById('details-form');
 const responseForm = document.getElementById('response-form');
 let globalName = '';
