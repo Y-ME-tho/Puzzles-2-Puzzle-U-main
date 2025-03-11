@@ -11,7 +11,6 @@ app.use(cors());
 const PORT = process.env.PORT || 3000;
 const MONGO_URI = 'mongodb+srv://rishabjha098:F7QzcbD8-VAiqR.@cluster0.sq6fc.mongodb.net/puzzlesDB?retryWrites=true&w=majority&appName=Cluster0';
 const GOOGLE_CLIENT_ID = '83394014914-n0r1a77ksmc9oojjc7r40c3blc4fe1gk.apps.googleusercontent.com';
-
 const client = new OAuth2Client(GOOGLE_CLIENT_ID);
 
 mongoose.connect(MONGO_URI, {
@@ -23,6 +22,7 @@ mongoose.connect(MONGO_URI, {
 
 const CURRENT_WEEK = 'week1';
 const CORRECT_ANSWER = '42';
+const puzzleStatement = "Here is the puzzle statement. Update me any time!";
 
 const submissionSchema = new mongoose.Schema({
   name: { type: String, required: true },
@@ -43,6 +43,10 @@ const User = mongoose.model('User', userSchema);
 
 app.get('/', (req, res) => {
   res.send('Welcome to the Puzzles Backend!');
+});
+
+app.get('/puzzle', (req, res) => {
+  res.json({ statement: puzzleStatement });
 });
 
 app.post('/auth/google', async (req, res) => {
@@ -113,12 +117,14 @@ app.get('/leaderboard', async (req, res) => {
         $project: {
           _id: 0,
           name: '$_id.name',
-          email: '$_id.email',
           totalAttempts: 1,
           problemsSolved: 1
         }
       }
     ]);
+    leaderboard.forEach((entry, index) => {
+      entry.rank = index + 1;
+    });
     res.json(leaderboard);
   } catch (error) {
     console.error('Error in /leaderboard route:', error);
